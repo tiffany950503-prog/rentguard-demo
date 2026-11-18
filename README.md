@@ -3,7 +3,7 @@
 > NextWave AI 法創黑客松 2026 參賽作品原型
 > 陪大學生走完租屋的 AI 助手：同一份租屋檔案，從簽約一路用到退租。
 
-**線上 Demo**：`https://<你的 GitHub 帳號>.github.io/rentguard-demo/`（部署後填入）
+**線上 Demo**：https://tiffany950503-prog.github.io/rentguard-demo/
 
 ## 解決什麼問題
 
