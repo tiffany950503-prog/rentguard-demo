@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>租屋守門人 RentGuard｜Demo</title>
+<meta name="description" content="陪大學生走完租屋的 AI 助手 Demo：契約紅綠燈、點交存證、押金追回、租屋財稅試算。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">AI法創黑客松｜Demo</p>
+    <h1>租屋守門人 <span>RentGuard</span></h1>
+    <p class="lead">同一份租屋檔案，從簽約一路用到退租。</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="功能">
+  <div class="wrap tabrow" role="tablist">
+    <button role="tab" data-tab="contract" aria-selected="true">① 契約紅綠燈</button>
+    <button role="tab" data-tab="movein">② 點交存證</button>
+    <button role="tab" data-tab="deposit">③ 押金追回</button>
+    <button role="tab" data-tab="tax">＋ 財稅試算</button>
+  </div>
+</nav>
+
+<main class="wrap">
+  <p class="disclaimer">本 Demo 以規則比對模擬 AI 判斷，結果僅供參考，<b>不是法律意見</b>。金額大、情況複雜時，請洽學校租屋輔導、各縣市租賃爭議調處或法律扶助。</p>
+
+  <!-- 1 契約紅綠燈 -->
+  <section id="tab-contract" class="panel">
+    <h2>簽約前：契約紅綠燈</h2>
+    <p class="muted">貼上契約文字（每一條一行），系統逐條比對住宅租賃規定，用紅黃綠燈標出問題條款。</p>
+    <div class="row">
+      <button class="ghost" id="loadSample">載入示範契約</button>
+      <button class="ghost" id="clearContract">清空</button>
+    </div>
+    <textarea id="contractText" rows="10" placeholder="第一條 ……&#10;第二條 ……"></textarea>
+    <div class="row"><button class="primary" id="scan">開始掃描</button><span class="err" id="contractErr"></span></div>
+    <div id="summary" class="summary" hidden></div>
+    <div id="results"></div>
+    <div id="sayBox" class="card" hidden>
+      <h3>可以傳給房東的訊息</h3>
+      <pre id="sayText"></pre>
+      <button class="ghost" data-copy="sayText">複製訊息</button>
+    </div>
+  </section>
+
+  <!-- 2 點交存證 -->
+  <section id="tab-movein" class="panel" hidden>
+    <h2>入住當天：點交存證</h2>
+    <p class="muted">依房型逐區檢查並拍照。完成後產生帶時間戳記的點交清單，存進這台裝置的「租屋檔案」，退租時用來比對。</p>
+    <div class="row">
+      <label>房型
+        <select id="roomType">
+          <option value="suite">套房</option>
+          <option value="room">雅房</option>
+          <option value="flat">整層</option>
+        </select>
+      </label>
+      <button class="ghost" id="resetMovein">重新開始</button>
+    </div>
+    <div id="areas"></div>
+    <div class="row"><button class="primary" id="makeReport">產生點交清單</button><span class="ok" id="saveMsg"></span></div>
+    <div id="reportBox" class="card" hidden>
+      <h3>點交清單</h3>
+      <pre id="reportText"></pre>
+      <button class="ghost" data-copy="reportText">複製清單（傳給房東確認）</button>
+    </div>
+  </section>
+
+  <!-- 3 押金追回 -->
+  <section id="tab-deposit" class="panel" hidden>
+    <h2>退租後：押金追回</h2>
+    <p class="muted">輸入房東的扣款項目，對應到入住時的點交紀錄，逐筆判斷能不能爭取。</p>
+    <div id="fileStatus" class="note"></div>
+    <div class="row">
+      <label>押金總額（元）<input type="number" id="depTotal" min="0" step="1" placeholder="16000"></label>
+    </div>
+    <table class="tbl" id="dedTable">
+      <thead><tr><th>扣款項目</th><th>金額</th><th>對應區域</th><th>你的判斷</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="row">
+      <button class="ghost" id="addDed">新增扣款</button>
+      <button class="ghost" id="sampleDed">載入示範扣款</button>
+      <button class="primary" id="evalDed">分析扣款</button>
+      <span class="err" id="dedErr"></span>
+    </div>
+    <div id="dedResult"></div>
+    <div id="dedMsgBox" class="card" hidden>
+      <h3>行動包</h3>
+      <ol class="steps">
+        <li><b>先協商</b>：把下面的訊息傳給房東。</li>
+        <li><b>協商不成</b>：寄存證信函，載明扣款爭議與返還期限。</li>
+        <li><b>仍無回應</b>：向租屋所在縣市申請租賃爭議調處，或洽學校租屋輔導。</li>
+      </ol>
+      <pre id="dedMsg"></pre>
+      <button class="ghost" data-copy="dedMsg">複製訊息</button>
+    </div>
+  </section>
+
+  <!-- 4 財稅試算 -->
+  <section id="tab-tax" class="panel" hidden>
+    <h2>每年五月：租屋財稅試算</h2>
+    <p class="muted">房屋租金支出特別扣除額（113 年度起）：租屋自住的租金減去政府補貼後，每戶每年最高可扣 18 萬元。</p>
+    <div class="grid2">
+      <label>全年租金（元）<input type="number" id="annualRent" min="0" step="1" value="96000"></label>
+      <label>已領政府租金補貼（元）<input type="number" id="subsidyAmt" min="0" step="1" value="0"></label>
+      <label>申報戶適用稅率
+        <select id="rate">
+          <option value="0.05">5%</option>
+          <option value="0.12">12%</option>
+          <option value="0.2">20% 以上</option>
+        </select>
+      </label>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" id="ownsHome"> 本人、配偶或受扶養直系親屬在國內有房屋</label>
+      <label><input type="checkbox" id="exception"> 符合例外（如因就學、就業、就醫需異地租屋）</label>
+      <label><input type="checkbox" id="highIncome"> 股利選 28% 分開計稅，或基本所得額超過門檻</label>
+    </div>
+    <div class="row"><button class="primary" id="calcTax">試算</button><span class="err" id="taxErr"></span></div>
+    <div id="taxResult"></div>
+    <div class="card">
+      <h3>申報要準備的文件</h3>
+      <ul>
+        <li>租賃契約書影本</li>
+        <li>付款證明：轉帳紀錄、匯款證明或房東簽收的收據</li>
+        <li>自住證明：戶籍登記或自住切結書</li>
+        <li>名下有房但符合例外者：相關證明文件</li>
+      </ul>
+      <p class="muted">試算不等於國稅局核定結果；稅法可能逐年調整，申報前請以財政部最新公告為準。</p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <h2>法規來源</h2>
+    <ul id="lawList"></ul>
+  </section>
+</main>
+
+<footer class="wrap foot">NextWave AI 法創黑客松 Demo · 資料只存在你的瀏覽器，不會上傳。</footer>
+
+<script src="rules.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
